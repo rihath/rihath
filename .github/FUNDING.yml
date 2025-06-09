@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My TRON DApp</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    .token-info { border: 1px solid #ccc; padding: 10px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>TRC20 Token Info</h1>
+  <input type="text" id="contractAddress" placeholder="Enter TRC20 contract address">
+  <button onclick="getTokenInfo()">Fetch Info</button>
+
+  <div id="result" class="token-info"></div>
+
+  <script>
+    // Simple HTML encoding function
+    function htmlEncode(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    async function getTokenInfo() {
+      const address = document.getElementById('contractAddress').value.trim();
+
+      if (!address.startsWith("T")) {
+        alert("Enter a valid TRON address");
+        return;
+      }
+
+      const apiUrl = `https://api.trongrid.io/v1/contracts/${address}?visible=true`;
+
+      try {
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+
+        if (!data || !data.data || !data.data.length) {
+          document.getElementById("result").innerHTML = "Token not found.";
+          return;
+        }
+
+        const contract = data.data[0];
+        const name = htmlEncode(contract.name || "N/A");
+        const owner = htmlEncode(contract.owner_address || "N/A");
+
+        document.getElementById("result").innerHTML = `
+          <strong>Name:</strong> ${name}<br>
+          <strong>Owner:</strong> ${owner}<br>
+          <strong>Contract:</strong> ${htmlEncode(address)}
+        `;
+      } catch (e) {
+        document.getElementById("result").textContent = "Error fetching token data.";
+        console.error(e);
+      }
+    }
+  </script>
+
+</body>
+</html>
